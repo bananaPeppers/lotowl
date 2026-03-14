@@ -32,6 +32,11 @@ function createPinElement(lot) {
   return pin;
 }
 
+const advanceButton = document.getElementById("advance-btn");
+const landingScreen = document.getElementById("landing");
+const mainScreen = document.getElementById("main-screen");
+const legend = document.getElementById("legend");
+
 async function init() {
   try {
     const response = await fetch("/api/lots");
@@ -57,4 +62,11 @@ async function init() {
   }
 }
 
-init();
+function startApp() {
+  landingScreen.classList.add("hidden");
+  mainScreen.classList.remove("hidden");
+  legend.classList.remove("hidden");
+  init();
+}
+
+advanceButton?.addEventListener("click", startApp);

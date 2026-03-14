@@ -8,37 +8,45 @@
 </head>
 <body>
   <div id="app">
-    <div id="map" aria-label="Parking map placeholder" role="img">
-      <div class="map-placeholder">
-        <p class="map-placeholder-title">Parking Map</p>
-        <p>Tap any pin to view lot details.</p>
+    <div id="landing" class="landing-screen">
+      <div class="landing-card">
+        <p class="hero-title">Make your ride more easy and convenient</p>
+        <p class="hero-subtitle">Find real-time parking availability and get directions in seconds.</p>
+        <button id="advance-btn" class="advance-btn">Advance</button>
       </div>
     </div>
 
-    <div id="legend" class="legend-card">
-      <div class="legend-item"><span class="dot dot-available"></span> Available</div>
-      <div class="legend-item"><span class="dot dot-limited"></span> Limited</div>
-      <div class="legend-item"><span class="dot dot-full"></span> Full</div>
-    </div>
-
-    <div id="modal-backdrop" class="modal-backdrop hidden"></div>
-    <div id="modal" class="modal-card hidden" aria-live="polite">
-      <div class="modal-header">
-        <div>
-          <p id="lot-name" class="lot-name">Lot A</p>
-          <p id="lot-address" class="lot-address">123 Main St</p>
+    <div id="main-screen" class="hidden">
+      <div id="map" aria-label="Parking map placeholder" role="img">
+        <div class="map-placeholder">
+          <p class="map-placeholder-title">Parking Map</p>
+          <p>Tap any pin to view lot details.</p>
         </div>
-        <button id="close-modal" class="close-btn" aria-label="Close lot details">✕</button>
       </div>
-      <div class="status-row">
-        <span id="lot-status" class="status-badge status-available">Available</span>
+      <div id="legend" class="legend-card hidden">
+        <div class="legend-item"><span class="dot dot-available"></span> Available</div>
+        <div class="legend-item"><span class="dot dot-limited"></span> Limited</div>
+        <div class="legend-item"><span class="dot dot-full"></span> Full</div>
       </div>
-      <div class="details-grid">
-        <div class="detail-block"><span class="detail-label">Available</span><strong id="lot-available">45</strong></div>
-        <div class="detail-block"><span class="detail-label">Total</span><strong id="lot-total">120</strong></div>
-        <div class="detail-block"><span class="detail-label">Type</span><strong id="lot-type">Surface</strong></div>
+      <div id="modal-backdrop" class="modal-backdrop hidden"></div>
+      <div id="modal" class="modal-card hidden" aria-live="polite">
+        <div class="modal-header">
+          <div>
+            <p id="lot-name" class="lot-name">Lot A</p>
+            <p id="lot-address" class="lot-address">123 Main St</p>
+          </div>
+          <button id="close-modal" class="close-btn" aria-label="Close lot details">✕</button>
+        </div>
+        <div class="status-row">
+          <span id="lot-status" class="status-badge status-available">Available</span>
+        </div>
+        <div class="details-grid">
+          <div class="detail-block"><span class="detail-label">Available</span><strong id="lot-available">45</strong></div>
+          <div class="detail-block"><span class="detail-label">Total</span><strong id="lot-total">120</strong></div>
+          <div class="detail-block"><span class="detail-label">Type</span><strong id="lot-type">Surface</strong></div>
+        </div>
+        <button id="directions-btn" class="directions-btn">Get Directions</button>
       </div>
-      <button id="directions-btn" class="directions-btn">Get Directions</button>
     </div>
   </div>
 
