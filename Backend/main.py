@@ -135,7 +135,7 @@ def update_from_sensor():
     except (TypeError, ValueError):
         return jsonify({"error": "accuracy must be a number"}), 400
 
-    # Hardware sends accuracy like 0.75, 0.80, 1.0
+
     if accuracy <= 0.60:
         return jsonify({
             "message": "Detection ignored because accuracy is too low",
@@ -230,4 +230,4 @@ def reset_lots():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)
