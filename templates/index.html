@@ -141,7 +141,7 @@
       // Define API base URL for easy switching
       const API = "http://127.0.0.1:8000";
       // Fetch M70 data from backend and update the lots array
-      fetch(`${API}/lots/M70`)
+      fetch(`/lots/M70`)
         .then(res => res.json())
         .then(data => {
           const m70 = lots.find(lot => lot.id === "M70");

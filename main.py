@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request,render_template
 from datetime import datetime
 import json
 import os
@@ -41,12 +41,9 @@ def save_lots(data):
     save_json_file(LOTS_FILE, data)
 
 
-@app.route("/", methods=["GET"])
-def home():
-    return jsonify({
-        "message": "Parking lot backend is running",
-        "status": "success"
-    }), 200
+@app.route("/")
+def index():
+    return render_template("index.html")
 
 
 @app.route("/sensors", methods=["GET"])
