@@ -1,0 +1,7 @@
+[
+  { "id": 1, "name": "Lot A", "address": "123 Main St", "lat": 41.0998, "lng": -80.6495, "status": "available", "totalSpots": 120, "availableSpots": 45, "type": "Surface" },
+  { "id": 2, "name": "Lot B", "address": "456 Oak Ave", "lat": 41.1012, "lng": -80.6521, "status": "limited", "totalSpots": 60, "availableSpots": 8, "type": "Garage" },
+  { "id": 3, "name": "Lot C", "address": "789 Elm Rd", "lat": 41.0985, "lng": -80.6478, "status": "full", "totalSpots": 80, "availableSpots": 0, "type": "Surface" },
+  { "id": 4, "name": "Lot D", "address": "321 Park Blvd", "lat": 41.1025, "lng": -80.6510, "status": "available", "totalSpots": 200, "availableSpots": 130, "type": "Garage" },
+  { "id": 5, "name": "Lot E", "address": "654 Center St", "lat": 41.0971, "lng": -80.6502, "status": "limited", "totalSpots": 40, "availableSpots": 5, "type": "Surface" }
+]
