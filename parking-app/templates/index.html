@@ -5,28 +5,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>LotOwl Parking Availability</title>
   <link rel="stylesheet" href="/static/css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 </head>
 <body>
   <div id="app">
     <div id="landing" class="landing-screen">
       <div class="landing-card">
-        <p class="hero-title">Make your ride more easy and convenient</p>
-        <p class="hero-subtitle">Find real-time parking availability and get directions in seconds.</p>
-        <button id="advance-btn" class="advance-btn">Advance</button>
+        <p class="app-label">Smart Parking</p>
+        <p class="hero-title">Find available parking faster</p>
+        <p class="hero-subtitle">Quickly locate open spots and drive smarter.</p>
+        <div class="landing-image-wrap">
+          <img class="landing-image" src="/static/img/owl.png" alt="LotOwl mascot" />
+        </div>
+        <button id="advance-btn" class="advance-btn" onclick="startApp()">Open Map</button>
       </div>
     </div>
 
     <div id="main-screen" class="hidden">
-      <div id="map" aria-label="Parking map placeholder" role="img">
-        <div class="map-placeholder">
-          <p class="map-placeholder-title">Parking Map</p>
-          <p>Tap any pin to view lot details.</p>
-        </div>
+      <div class="top-nav">
+        <input id="search-input" class="search-box" type="search" placeholder="🔍 Search parking" aria-label="Search parking" />
+        <button class="menu-btn" aria-label="App owl">🦉</button>
       </div>
-      <div id="legend" class="legend-card hidden">
-        <div class="legend-item"><span class="dot dot-available"></span> Available</div>
-        <div class="legend-item"><span class="dot dot-limited"></span> Limited</div>
-        <div class="legend-item"><span class="dot dot-full"></span> Full</div>
+      <div class="content-wrap">
+        <div id="map" aria-label="Parking map" role="img"></div>
+        <div id="lot-summary" class="lot-summary">
+          <div class="summary-row"><strong id="summary-lot-name">M70 Parking Lot</strong></div>
+          <div class="summary-row">Total spots: <span id="summary-total">50</span></div>
+          <div class="summary-row">Spots taken: <span id="summary-taken">18</span></div>
+          <div class="summary-row">Available: <span id="summary-available">32</span></div>
+          <button id="navigate-btn" class="directions-btn" style="margin-top:12px;">Navigate</button>
+          <button id="end-nav-btn" class="directions-btn" style="margin-top:10px; display:none; background:#ef4444;">End Navigation</button>
+        </div>
+        <div id="legend" class="legend-card hidden">
+          <div class="legend-item"><span class="dot dot-available"></span> Available</div>
+          <div class="legend-item"><span class="dot dot-limited"></span> Almost Full</div>
+          <div class="legend-item"><span class="dot dot-full"></span> Full</div>
+        </div>
       </div>
       <div id="modal-backdrop" class="modal-backdrop hidden"></div>
       <div id="modal" class="modal-card hidden" aria-live="polite">
@@ -39,17 +54,168 @@
         </div>
         <div class="status-row">
           <span id="lot-status" class="status-badge status-available">Available</span>
+          <span id="lot-distance" class="lot-distance">0.4 mi away</span>
         </div>
         <div class="details-grid">
           <div class="detail-block"><span class="detail-label">Available</span><strong id="lot-available">45</strong></div>
           <div class="detail-block"><span class="detail-label">Total</span><strong id="lot-total">120</strong></div>
-          <div class="detail-block"><span class="detail-label">Type</span><strong id="lot-type">Surface</strong></div>
+          <div class="detail-block"><span class="detail-label">Distance</span><strong id="lot-distance-val">0.4 mi</strong></div>
         </div>
         <button id="directions-btn" class="directions-btn">Get Directions</button>
       </div>
     </div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+  <script>
+    // ----------------------
+    // MAP SETUP
+    // ----------------------
+    var map;
+
+    // Navigation to M70
+    let routingControl;
+    let selectedLot = { lat: 41.108307, lng: -80.652153, name: 'M70 Parking Lot' };
+    function navigateToSelectedLot() {
+      const destLat = selectedLot.lat;
+      const destLng = selectedLot.lng;
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        const userLat = pos.coords.latitude;
+        const userLng = pos.coords.longitude;
+        if (routingControl) {
+          map.removeControl(routingControl);
+        }
+        routingControl = L.Routing.control({
+          waypoints: [
+            L.latLng(userLat, userLng),
+            L.latLng(destLat, destLng)
+          ],
+          routeWhileDragging: false,
+          show: false,
+          addWaypoints: false,
+          draggableWaypoints: false,
+          fitSelectedRoutes: true,
+          createMarker: function() { return null; }
+        }).addTo(map);
+        // Show End Navigation button
+        var endBtn = document.getElementById('end-nav-btn');
+        if (endBtn) endBtn.style.display = '';
+        var navBtn = document.getElementById('navigate-btn');
+        if (navBtn) navBtn.style.display = 'none';
+      }, function() {
+        alert('Could not get your location.');
+      });
+    }
+
+    function endNavigation() {
+      if (routingControl) {
+        map.removeControl(routingControl);
+        routingControl = null;
+      }
+      var endBtn = document.getElementById('end-nav-btn');
+      if (endBtn) endBtn.style.display = 'none';
+      var navBtn = document.getElementById('navigate-btn');
+      if (navBtn) navBtn.style.display = '';
+    }
+
+    function initLeafletMap() {
+      map = L.map('map').setView([41.1078, -80.6465], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      const lots = [
+        { id:'M70', name:'M70 Parking Lot', lat:41.108307, lng:-80.652153, total:50, taken:18, info:'YSU M70 Lot' },
+        { id:'M30', name:'M30 Parking Deck', lat:41.1075, lng:-80.6478, total:34, taken:22, info:'Student Deck' },
+        { id:'Wick', name:'Wick Avenue Deck', lat:41.1068, lng:-80.6460, total:45, taken:40, info:'Student Deck' },
+        { id:'M24', name:'M24 Parking Lot', lat:41.1064, lng:-80.6490, total:30, taken:23, info:'Student Lot' },
+        { id:'M21', name:'M21 Parking Lot', lat:41.1081, lng:-80.6440, total:28, taken:19, info:'Student Lot' },
+        { id:'M18', name:'M18 Parking Lot', lat:41.1091, lng:-80.6455, total:35, taken:32, info:'Student Lot' }
+      ];
+
+      function updateSummary(lot) {
+        document.getElementById('summary-lot-name').textContent = lot.name;
+        document.getElementById('summary-total').textContent = lot.total;
+        document.getElementById('summary-taken').textContent = lot.taken;
+        document.getElementById('summary-available').textContent = lot.total - lot.taken;
+        selectedLot = lot;
+      }
+
+      function getMarkerIcon(color) {
+        return new L.Icon({
+          iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41]
+        });
+      }
+
+      function createLotMarker(lot, idx) {
+        let color = 'green';
+        if (lot.id === 'M70') {
+          color = 'blue';
+        } else if (idx % 2 === 0) {
+          color = 'green';
+        } else {
+          color = 'red';
+        }
+
+        const marker = L.marker([lot.lat, lot.lng], {
+          icon: getMarkerIcon(color)
+        }).addTo(map);
+
+        marker.bindPopup(`<b>${lot.name}</b><br>Available: ${lot.total - lot.taken}<br><i>${lot.info}</i>`);
+        marker.on('click', () => updateSummary(lot));
+        marker.on('popupopen', () => updateSummary(lot));
+        return marker;
+      }
+
+      const markers = lots.map((lot, idx) => ({ ...lot, marker: createLotMarker(lot, idx) }));
+      updateSummary(lots[0]);
+
+      function searchLot(query) {
+        const normalized = query.trim().toLowerCase();
+        if (!normalized) return;
+        const found = markers.find((lot) => lot.name.toLowerCase().includes(normalized) || lot.id.toLowerCase().includes(normalized));
+        if (found) {
+          map.setView([found.lat, found.lng], 16);
+          found.marker.openPopup();
+          updateSummary(found);
+        }
+      }
+
+      const searchInput = document.getElementById('search-input');
+      searchInput?.addEventListener('input', (e) => {
+        const query = e.target.value;
+        if (!query) return;
+        searchLot(query);
+      });
+    }
+
+    function startApp() {
+      document.getElementById('landing').classList.add('hidden');
+      document.getElementById('main-screen').classList.remove('hidden');
+      document.getElementById('legend').classList.remove('hidden');
+      setTimeout(initLeafletMap, 50);
+      // Attach navigation button handler
+      setTimeout(function() {
+        var navBtn = document.getElementById('navigate-btn');
+        if (navBtn) navBtn.onclick = navigateToSelectedLot;
+        var endBtn = document.getElementById('end-nav-btn');
+        if (endBtn) endBtn.onclick = endNavigation;
+      }, 200);
+    }
+
+    document.getElementById('advance-btn')?.addEventListener('click', startApp);
+
+  </script>
   <script src="/static/js/modal.js"></script>
   <script src="/static/js/map.js"></script>
 </body>
