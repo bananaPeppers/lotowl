@@ -18,7 +18,7 @@
         <div class="landing-image-wrap">
           <img class="landing-image" src="/static/img/owl.png" alt="LotOwl mascot" />
         </div>
-        <button id="advance-btn" class="advance-btn" onclick="startApp()">Open Map</button>
+        <button id="advance-btn" class="advance-btn">Open Map</button>
       </div>
     </div>
 
@@ -274,13 +274,36 @@
       });
     }
 
+    const SESSION_KEY = 'lotowl_session';
+    let appStarted = false;
+
+    function getSessionStore() {
+      try {
+        sessionStorage.setItem('__lotowl_test__', '1');
+        sessionStorage.removeItem('__lotowl_test__');
+        return sessionStorage;
+      } catch (e) {
+        return localStorage;
+      }
+    }
+
     function startApp() {
-      try { localStorage.setItem('lotowl_session', '1'); } catch (e) { /* ignore */ }
+      if (appStarted) return;
+      appStarted = true;
+
+      try {
+        getSessionStore().setItem(SESSION_KEY, '1');
+      } catch (e) {
+        // Ignore storage errors and continue rendering the app.
+      }
+
       document.getElementById('landing').classList.add('hidden');
       document.getElementById('main-screen').classList.remove('hidden');
       document.getElementById('legend').classList.remove('hidden');
+
       setTimeout(initLeafletMap, 50);
-      // Attach navigation button handler
+
+      // Attach navigation handlers after the map controls are rendered.
       setTimeout(function() {
         var navBtn = document.getElementById('navigate-btn');
         if (navBtn) navBtn.onclick = navigateToSelectedLot;
@@ -290,6 +313,16 @@
     }
 
     document.getElementById('advance-btn')?.addEventListener('click', startApp);
+
+    window.addEventListener('DOMContentLoaded', function() {
+      try {
+        if (getSessionStore().getItem(SESSION_KEY) === '1') {
+          startApp();
+        }
+      } catch (e) {
+        // Ignore storage errors and stay on landing screen.
+      }
+    });
 
   </script>
   <script src="/static/js/modal.js"></script>
