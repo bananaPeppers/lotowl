@@ -144,12 +144,14 @@
       fetch(`/lots/M70`)
         .then(res => res.json())
         .then(data => {
+          console.debug('Initial M70 fetch:', data);
           const m70 = lots.find(lot => lot.id === "M70");
           if (m70) {
             // Map backend fields to frontend
             m70.total = data.max_capacity;
             m70.taken = data.occupied_count;
             updateSummary(m70); // refresh the UI
+            console.debug('Updated summary for M70:', { total: m70.total, taken: m70.taken });
           }
         })
         .catch(err => console.error("Failed to fetch M70 data:", err));
@@ -213,6 +215,7 @@
         fetch(`/lots/M70`)
           .then(res => res.json())
           .then(data => {
+            console.debug('M70 poll received:', data);
             const m70 = lots.find(lot => lot.id === "M70");
             if (!m70) return;
             // update values
@@ -222,11 +225,15 @@
             // update summary panel
             updateSummary(m70);
 
+            console.debug('Summary updated:', { total: m70.total, taken: m70.taken, available: m70.total - m70.taken });
+
             // update marker popup and icon color
             const markerEntry = markers.find(m => m.id === 'M70');
             if (markerEntry && markerEntry.marker) {
               const available = m70.total - m70.taken;
               markerEntry.marker.setPopupContent(`<b>${m70.name}</b><br>Available: ${available}<br><i>${m70.info}</i>`);
+
+              console.debug('Marker popup updated for M70, available=', available);
 
               // decide color based on availability
               let newColor = 'green';

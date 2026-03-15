@@ -2,8 +2,10 @@ from flask import Flask, jsonify, request,render_template
 from datetime import datetime
 import json
 import os
+import logging
 
 app = Flask(__name__)
+app.logger.setLevel(logging.INFO)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.environ.get("DATA_DIR", BASE_DIR)
@@ -122,6 +124,8 @@ def get_summary():
 def update_from_sensor():
     incoming = request.get_json()
 
+    app.logger.info("Received /update POST: %s", incoming)
+
     if not incoming:
         return jsonify({"error": "No JSON data received"}), 400
 
@@ -141,6 +145,7 @@ def update_from_sensor():
 
 
     if accuracy <= 0.60:
+        app.logger.info("Ignored detection from device %s due to low accuracy %s", device_id, accuracy)
         return jsonify({
             "message": "Detection ignored because accuracy is too low",
             "deviceId": device_id,
@@ -156,6 +161,7 @@ def update_from_sensor():
             break
 
     if not matched_sensor:
+        app.logger.info("Unknown deviceId: %s", device_id)
         return jsonify({"error": "Unknown deviceId"}), 404
 
     sensor_type = matched_sensor.get("type")
@@ -193,6 +199,17 @@ def update_from_sensor():
                 lot["occupied_count"] = current_count - 1
 
             lot["last_updated"] = datetime.now().isoformat()
+
+            # Log the update and file path being written
+            app.logger.info(
+                "Updating lot %s: %s -> %s (sensor=%s device=%s file=%s)",
+                lot_id,
+                current_count,
+                lot.get("occupied_count"),
+                sensor_type,
+                device_id,
+                LOTS_FILE,
+            )
 
             save_lots(lots)
 
