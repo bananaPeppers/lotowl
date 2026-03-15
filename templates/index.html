@@ -223,7 +223,10 @@
             m70.taken = data.occupied_count;
 
             // update summary panel
-            updateSummary(m70);
+            if (document.getElementById('summary-lot-name').textContent === "M70 Parking Lot") {
+              updateSummary(m70);
+            }
+
 
             console.debug('Summary updated:', { total: m70.total, taken: m70.taken, available: m70.total - m70.taken });
 
