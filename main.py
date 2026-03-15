@@ -262,7 +262,7 @@ def update_from_sensor():
 
 
     min_accuracy = env_float("MIN_DETECTION_ACCURACY", 0.50)
-    if accuracy < min_accuracy:
+    if accuracy <= min_accuracy:
         app.logger.info(
             "Ignored detection from device %s due to low accuracy %s (min=%s)",
             device_id,
