@@ -51,6 +51,14 @@ def env_flag(name, default=False):
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def env_float(name, default):
+    value = os.environ.get(name, str(default))
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return float(default)
+
+
 def load_sensors():
     sensors = load_json_file(SENSORS_FILE)
     if sensors:
@@ -175,12 +183,19 @@ def update_from_sensor():
         return jsonify({"error": "accuracy must be a number"}), 400
 
 
-    if accuracy <= 0.60:
-        app.logger.info("Ignored detection from device %s due to low accuracy %s", device_id, accuracy)
+    min_accuracy = env_float("MIN_DETECTION_ACCURACY", 0.50)
+    if accuracy < min_accuracy:
+        app.logger.info(
+            "Ignored detection from device %s due to low accuracy %s (min=%s)",
+            device_id,
+            accuracy,
+            min_accuracy,
+        )
         return jsonify({
             "message": "Detection ignored because accuracy is too low",
             "deviceId": device_id,
-            "accuracy": accuracy
+            "accuracy": accuracy,
+            "min_required_accuracy": min_accuracy,
         }), 200
 
     try:
