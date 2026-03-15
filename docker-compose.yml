@@ -3,7 +3,7 @@ services:
     build: .
     container_name: lotowl
     ports:
-      - "8000:8000"
+      - "2111:8000"
     environment:
       PORT: 8000
       DATA_DIR: /app/data
