@@ -208,6 +208,46 @@
       const markers = lots.map((lot, idx) => ({ ...lot, marker: createLotMarker(lot, idx) }));
       updateSummary(lots[0]);
 
+      // Poll backend for M70 updates and refresh UI/marker every 3 seconds
+      setInterval(function() {
+        fetch(`/lots/M70`)
+          .then(res => res.json())
+          .then(data => {
+            const m70 = lots.find(lot => lot.id === "M70");
+            if (!m70) return;
+            // update values
+            m70.total = data.max_capacity;
+            m70.taken = data.occupied_count;
+
+            // update summary panel
+            updateSummary(m70);
+
+            // update marker popup and icon color
+            const markerEntry = markers.find(m => m.id === 'M70');
+            if (markerEntry && markerEntry.marker) {
+              const available = m70.total - m70.taken;
+              markerEntry.marker.setPopupContent(`<b>${m70.name}</b><br>Available: ${available}<br><i>${m70.info}</i>`);
+
+              // decide color based on availability
+              let newColor = 'green';
+              if (available > 25) newColor = 'green';
+              else if (available < 15 && available > 0) newColor = 'blue';
+              else if (available <= 0) newColor = 'red';
+
+              // replace icon if changed
+              const currentIconUrl = markerEntry.marker.options.icon?.options?.iconUrl || '';
+              const desiredIconUrl = `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${newColor}.png`;
+              if (currentIconUrl !== desiredIconUrl) {
+                markerEntry.marker.setIcon(getMarkerIcon(newColor));
+              }
+            }
+          })
+          .catch(err => {
+            // don't spam console, but log occasional failures
+            console.debug('M70 poll failed:', err);
+          });
+      }, 3000);
+
       function searchLot(query) {
         const normalized = query.trim().toLowerCase();
         if (!normalized) return;
