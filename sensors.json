@@ -1,10 +1,17 @@
 [
   {
     "device_id": 0,
-    "lot_id": "M70"
+    "lot_id": "M70",
+    "type": "entry"
   },
   {
     "device_id": 1,
-    "lot_id": "M70"
+    "lot_id": "M70",
+    "type": "entry"
+  },
+  {
+    "device_id": 2,
+    "lot_id": "M70",
+    "type": "exit"
   }
 ]
